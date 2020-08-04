@@ -8,12 +8,11 @@
 
 
 # train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
-train: ../VOC/images/train/  # 16551 images
-val: ../VOC/images/val/  # 4952 images
+train: list/train.txt  
+val: list/val.txt
 
 # number of classes
-nc: 20
+nc: 6
 
 # class names
-names: ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog',
-        'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+names: ["red_stop", "green_go", "yellow_back", "pedestrian_crossing", "speed_limited", "speed_unlimited"]

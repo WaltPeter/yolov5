@@ -1,0 +1,57 @@
+import xml.etree.ElementTree as ET
+import pickle
+import os
+from tqdm import tqdm 
+from os import listdir, getcwd
+from os.path import join
+
+classes = ["red_stop", "green_go", "yellow_back", "pedestrian_crossing", "speed_limited", "speed_unlimited"]
+
+rootpath = "."
+xmlpath = os.path.join(rootpath, "dataset") 
+
+def convert(size, box):
+    dw = 1./(size[0])
+    dh = 1./(size[1])
+    x = (box[0] + box[1])/2.0 - 1
+    y = (box[2] + box[3])/2.0 - 1
+    w = box[1] - box[0]
+    h = box[3] - box[2]
+    x = x*dw
+    w = w*dw
+    y = y*dh
+    h = h*dh
+    return (x,y,w,h)
+
+def convert_annotation(rootpath, xmlfile):  
+    with open(xmlfile, "r") as in_file: 
+        txtname = os.path.split(xmlfile)[-1][:-4] + '.txt'
+        txtpath = os.path.join(rootpath, "dataset") 
+        if not os.path.exists(txtpath): os.makedirs(txtpath)
+        txtfile = os.path.join(txtpath, txtname)
+        with open(txtfile, "w+") as out_file:
+            tree = ET.parse(in_file)
+            root = tree.getroot()
+            size = root.find('size')
+            w = int(size.find('width').text)
+            h = int(size.find('height').text)
+            out_file.truncate()
+            for obj in root.iter('object'):
+                difficult = obj.find('difficult').text
+                cls_ = obj.find('name').text
+                if cls_ not in classes or int(difficult) == 1:
+                    continue
+                cls_id = classes.index(cls_)
+                xmlbox = obj.find('bndbox')
+                b = (float(xmlbox.find('xmin').text), float(xmlbox.find('xmax').text), \
+                    float(xmlbox.find('ymin').text), float(xmlbox.find('ymax').text))
+                bb = convert((w,h), b)
+                out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+
+
+if __name__ == "__main__":
+    path_list = os.listdir(xmlpath)
+    for xml in tqdm(path_list): 
+        path = os.path.join(xmlpath, xml)
+        if '.xml' in path or '.XML' in path:
+            convert_annotation(rootpath, path)
